@@ -11,5 +11,8 @@ module com.example.proyectopoesudoku6x6 {
     opens com.example.proyectopoesudoku6x6.utils to javafx.fxml;
 
     exports com.example.proyectopoesudoku6x6;
+    exports com.example.proyectopoesudoku6x6.controllers;
     exports com.example.proyectopoesudoku6x6.utils;
+    exports com.example.proyectopoesudoku6x6.models;
+    exports com.example.proyectopoesudoku6x6.views;
 }
