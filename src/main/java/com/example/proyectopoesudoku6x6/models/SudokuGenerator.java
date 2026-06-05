@@ -63,7 +63,6 @@ public class SudokuGenerator {
     }
 
     private boolean esSeguro(int fila, int col, int num) {
-        // Verificar fila y columna
         for (int i = 0; i < size; i++) {
             if (board[fila][i] == num || board[i][col] == num)
                 return false;
@@ -83,7 +82,6 @@ public class SudokuGenerator {
     private int[] generarNumerosAleatorios(int n) {
         int[] arr = new int[n];
         for (int i = 0; i < n; i++) arr[i] = i + 1;
-        // Mezcla de Fisher-Yates
         for (int i = 0; i < n; i++) {
             int j = rand.nextInt(n);
             int temp = arr[i];

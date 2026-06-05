@@ -1,7 +1,9 @@
 package com.example.proyectopoesudoku6x6.models;
 
 import com.example.proyectopoesudoku6x6.controllers.CellChangeListener;
+import com.example.proyectopoesudoku6x6.utils.AlertsSudoku;
 import com.example.proyectopoesudoku6x6.views.SudokuCell;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.GridPane;
 
 import java.util.Random;
@@ -10,8 +12,7 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
 
     private static final int SIZE = 6;
 
-    private static final int MAX_PISTAS_PERMITIDAS = 2;
-
+    private static final int MIN_CELDAS_LIBRES_PARA_PISTA = 2;
 
     private SudokuCell[][] celdas;
 
@@ -19,24 +20,19 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
 
     private int[][] tableroVisible;
 
-
     public SudokuBoard() {
         celdas = new SudokuCell[SIZE][SIZE];
         generarTablero();
     }
-
     public void generarTablero() {
         this.getChildren().clear();
 
-        // 1. Generar solución completa
         SudokuGenerator generador = new SudokuGenerator(SIZE);
-        solucion        = generador.getBoard();
-        tableroVisible  = copiarTablero(solucion);
+        solucion       = generador.getBoard();
+        tableroVisible = copiarTablero(solucion);
 
-        // 2. Ocultar celdas (dejar 2 visibles por bloque)
         ocultarCeldasAleatorias(tableroVisible);
 
-        // 3. Construir celdas visuales
         for (int fila = 0; fila < SIZE; fila++) {
             for (int col = 0; col < SIZE; col++) {
                 int valor    = tableroVisible[fila][col];
@@ -51,12 +47,13 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
             }
         }
     }
-
+    public void generarNuevoTablero() {
+        generarTablero();
+    }
     public static void ocultarCeldasAleatorias(int[][] tablero) {
         Random rand = new Random();
         boolean[][] mantenerVisible = new boolean[SIZE][SIZE];
 
-        // Por cada bloque 2x3, seleccionar 2 posiciones al azar
         for (int inicioFila = 0; inicioFila < SIZE; inicioFila += 2) {
             for (int inicioCol = 0; inicioCol < SIZE; inicioCol += 3) {
                 int visibles = 0;
@@ -79,11 +76,9 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
             }
         }
     }
-
     private void aplicarEstiloCelda(SudokuCell celda, int fila, int col, boolean editable) {
         String colorFondo = editable ? "white" : "#dce8f5";
 
-        // Grosor de bordes: 2 px en límites de bloque, 1 px entre celdas
         String top    = (fila % 2 == 0 && fila != 0) ? "2" : "1";
         String left   = (col  % 3 == 0 && col  != 0) ? "2" : "1";
         String bottom = (fila == SIZE - 1) ? "2" : "1";
@@ -91,22 +86,129 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
 
         celda.setStyle(String.format(
                 "-fx-background-color: %s;" +
-                "-fx-border-color: #34495e;" +
-                "-fx-border-width: %spx %spx %spx %spx;" +
-                "-fx-border-style: solid;" +
-                "-fx-alignment: center;" +
-                "-fx-font-size: 18px;" +
-                "-fx-font-weight: bold;",
+                        "-fx-border-color: #34495e;" +
+                        "-fx-border-width: %spx %spx %spx %spx;" +
+                        "-fx-border-style: solid;" +
+                        "-fx-alignment: center;" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-font-weight: bold;",
                 colorFondo, top, right, bottom, left
         ));
     }
+    private void establecerFondoCelda(SudokuCell celda, String color) {
+        String estilo = celda.getStyle()
+                .replaceAll("-fx-background-color:[^;]+;", "");
+        celda.setStyle(estilo + "-fx-background-color: " + color + ";");
+    }
+    @Override
+    public void onValueChanged(int fila, int col, int nuevoValor) {
+        actualizarColoresCeldas();
+        verificarCompletado();
+    }
+    private void actualizarColoresCeldas() {
+        for (int f = 0; f < SIZE; f++) {
+            for (int c = 0; c < SIZE; c++) {
+                SudokuCell celda = celdas[f][c];
+                if (!celda.esEditable()) continue;
 
-    private int[][] copiarTablero(int[][] tablero) {
-        int[][] copia = new int[tablero.length][tablero[0].length];
-        for (int i = 0; i < tablero.length; i++) {
-            System.arraycopy(tablero[i], 0, copia[i], 0, tablero[i].length);
+                int val = celda.getValue();
+                if (val == 0) {
+                    celda.setValidacion(true);  // vacía = sin error
+                } else {
+                    celda.setValidacion(esMovimientoValido(f, c, val));
+                }
+            }
         }
-        return copia;
+    }
+    public boolean esMovimientoValido(int fila, int col, int valor) {
+        for (int i = 0; i < SIZE; i++) {
+            if (i != col  && celdas[fila][i].getValue() == valor) return false;
+            if (i != fila && celdas[i][col].getValue()  == valor) return false;
+        }
+        int inicioFila = (fila / 2) * 2;
+        int inicioCol  = (col  / 3) * 3;
+        for (int f = inicioFila; f < inicioFila + 2; f++) {
+            for (int c = inicioCol; c < inicioCol + 3; c++) {
+                if ((f != fila || c != col) && celdas[f][c].getValue() == valor)
+                    return false;
+            }
+        }
+        return true;
+    }
+    private void verificarCompletado() {
+        for (int f = 0; f < SIZE; f++) {
+            for (int c = 0; c < SIZE; c++) {
+                int val = celdas[f][c].getValue();
+                if (val == 0 || !esMovimientoValido(f, c, val)) return;
+            }
+        }
+
+        AlertsSudoku alerta = new AlertsSudoku();
+        alerta.showAlert(Alert.AlertType.INFORMATION,
+                "¡Felicidades!",
+                "¡Has completado el Sudoku correctamente! 🎉");
+
+        for (int f = 0; f < SIZE; f++) {
+            for (int c = 0; c < SIZE; c++) {
+                celdas[f][c].setEditable(false);
+            }
+        }
+    }
+    public void verificarTableroManual() {
+        boolean hayVacias  = false;
+        boolean hayErrores = false;
+
+        for (int f = 0; f < SIZE; f++) {
+            for (int c = 0; c < SIZE; c++) {
+                int val = celdas[f][c].getValue();
+                if (val == 0) {
+                    hayVacias = true;
+                } else if (!esMovimientoValido(f, c, val)) {
+                    hayErrores = true;
+                }
+            }
+        }
+
+        AlertsSudoku alerta = new AlertsSudoku();
+
+        if (hayErrores) {
+            alerta.showAlert(Alert.AlertType.ERROR,
+                    "Tablero incorrecto",
+                    "Hay errores en el tablero. Revisa los números con borde rojo.");
+        } else if (hayVacias) {
+            alerta.showAlert(Alert.AlertType.WARNING,
+                    "Tablero incompleto",
+                    "Aún hay celdas vacías. ¡Sigue intentando!");
+        } else {
+            verificarCompletado();
+        }
+
+        actualizarColoresCeldas();
+    }
+
+    public void darPista() {
+        int celdasLibres = (SIZE * SIZE) - contarCeldasOcupadas();
+
+        if (celdasLibres <= MIN_CELDAS_LIBRES_PARA_PISTA) {
+            AlertsSudoku alerta = new AlertsSudoku();
+            alerta.showAlert(Alert.AlertType.WARNING,
+                    "Sin pistas disponibles",
+                    "Ya no hay pistas disponibles. ¡Estás muy cerca de terminar!");
+            return;
+        }
+
+        Random rand = new Random();
+        boolean encontrada = false;
+        while (!encontrada) {
+            int f = rand.nextInt(SIZE);
+            int c = rand.nextInt(SIZE);
+            SudokuCell celda = celdas[f][c];
+            if (celda.getValue() == 0) {
+                celda.mostrarPista(solucion[f][c]);
+                encontrada = true;
+            }
+        }
+        actualizarColoresCeldas();
     }
 
     public int contarCeldasOcupadas() {
@@ -118,44 +220,20 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
         }
         return ocupadas;
     }
-
-    public boolean esMovimientoValido(int fila, int col, int valor) {
-        // Revisar fila y columna
-        for (int i = 0; i < SIZE; i++) {
-            if (i != col && celdas[fila][i].getValue() == valor) return false;
-            if (i != fila && celdas[i][col].getValue() == valor) return false;
+    private int[][] copiarTablero(int[][] tablero) {
+        int[][] copia = new int[tablero.length][tablero[0].length];
+        for (int i = 0; i < tablero.length; i++) {
+            System.arraycopy(tablero[i], 0, copia[i], 0, tablero[i].length);
         }
-
-        // Revisar bloque 2×3
-        int inicioFila = (fila / 2) * 2;
-        int inicioCol  = (col  / 3) * 3;
-        for (int f = inicioFila; f < inicioFila + 2; f++) {
-            for (int c = inicioCol; c < inicioCol + 3; c++) {
-                if ((f != fila || c != col) && celdas[f][c].getValue() == valor)
-                    return false;
-            }
-        }
-        return true;
+        return copia;
     }
-
-    public void generarNuevoTablero() {
-        generarTablero();
-    }
-
     public int[][] getSolucion() {
         return solucion;
     }
-
     public SudokuCell[][] getCeldas() {
         return celdas;
     }
-
     public static int getSize() {
         return SIZE;
-    }
-
-    @Override
-    public void onValueChanged(int fila, int col, int nuevoValor) {
-        // Implementación en paso 2
     }
 }
