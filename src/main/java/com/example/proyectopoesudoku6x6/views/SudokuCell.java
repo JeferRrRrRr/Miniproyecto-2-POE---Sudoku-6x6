@@ -9,7 +9,16 @@ import javafx.scene.text.FontWeight;
 
 import java.util.function.UnaryOperator;
 
+/**
+ * @author Juan Diego Quiñones Cometa
+ * @author Jeferson Gomez Gomez
+ * @version 1.0
+ * @see CellChangeListener
+ * @see com.example.proyectopoesudoku6x6.models.SudokuBoard
+ */
+
 public class SudokuCell extends TextField {
+
 
     private final int fila;
     private final int col;
@@ -17,6 +26,12 @@ public class SudokuCell extends TextField {
     private int valor;
     private CellChangeListener listener;
 
+    /**
+     * @param fila       fila de la celda en el tablero (0-5)
+     * @param col        columna de la celda en el tablero (0-5)
+     * @param esEditable {@code true} si el usuario puede ingresar un número
+     * @param valor      valor inicial (0 si la celda comienza vacía)
+     */
     public SudokuCell(int fila, int col, boolean esEditable, int valor) {
         this.fila       = fila;
         this.col        = col;
@@ -71,7 +86,6 @@ public class SudokuCell extends TextField {
             }
         });
 
-        // Efecto visual al pasar el mouse
         setOnMouseEntered(evento -> {
             if (esEditable && valor == 0) {
                 modificarEstilo("-fx-background-color", "#eaf4fb");
@@ -85,15 +99,26 @@ public class SudokuCell extends TextField {
         });
     }
 
+    /**
+     * @return valor entre 1 y 6, o 0 si la celda está vacía
+     */
     public int getValue() {
         return valor;
     }
 
+    /**
+     * @param nuevoValor nuevo valor (1-6); pasar 0 para dejar la celda vacía
+     */
     public void setValue(int nuevoValor) {
         this.valor = nuevoValor;
         setText(nuevoValor != 0 ? String.valueOf(nuevoValor) : "");
     }
 
+    /**
+     * @param num número correcto de la solución a mostrar como pista
+     * @see #setValue(int)
+     * @see #modificarEstilo(String, String)
+     */
     public void mostrarPista(int num) {
         setValue(num);
         setEditable(false);
@@ -102,6 +127,10 @@ public class SudokuCell extends TextField {
         modificarEstilo("-fx-text-fill", "#d35400");
     }
 
+    /**
+     * @param valido {@code true} si el número cumple las reglas del Sudoku
+     * @see #modificarEstilo(String, String)
+     */
     public void setValidacion(boolean valido) {
         if (!esEditable) return;
 
@@ -114,6 +143,10 @@ public class SudokuCell extends TextField {
         }
     }
 
+    /**
+     * @param propiedad  propiedad CSS a modificar (ej: {@code -fx-background-color})
+     * @param nuevoValor nuevo valor CSS a asignar (ej: {@code #ffe0e0})
+     */
     private void modificarEstilo(String propiedad, String nuevoValor) {
         String estiloActual = getStyle();
         if (estiloActual == null) estiloActual = "";
@@ -126,18 +159,30 @@ public class SudokuCell extends TextField {
         setStyle(estiloActual);
     }
 
+    /**
+     * @param listener objeto que implementa {@link CellChangeListener}
+     */
     public void setChangeListener(CellChangeListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * @return {@code true} si la celda puede ser modificada por el usuario
+     */
     public boolean esEditable() {
         return esEditable;
     }
 
+    /**
+     * @return índice de fila (0-5)
+     */
     public int getFila() {
         return fila;
     }
 
+    /**
+     * @return índice de columna (0-5)
+     */
     public int getColumna() {
         return col;
     }

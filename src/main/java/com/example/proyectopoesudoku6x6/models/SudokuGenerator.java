@@ -2,22 +2,28 @@ package com.example.proyectopoesudoku6x6.models;
 
 import java.util.Random;
 
+/**
+ * @author Juan Diego Quiñones Cometa
+ * @author Jeferson Gomez Gomez
+ * @version 1.0
+ * @see SudokuBoard
+ */
 public class SudokuGenerator {
 
 
     private final int size;
 
-
     private final int boxRows;
-
 
     private final int boxCols;
 
     private final int[][] board;
 
-
     private final Random rand = new Random();
 
+    /**
+     * @param size tamaño del tablero (para este proyecto siempre 6)
+     */
     public SudokuGenerator(int size) {
         this.size = size;
 
@@ -36,6 +42,9 @@ public class SudokuGenerator {
         generarTablero();
     }
 
+    /**
+     * @return arreglo 2D con el tablero Sudoku generado
+     */
     public int[][] getBoard() {
         return board;
     }
@@ -44,6 +53,11 @@ public class SudokuGenerator {
         rellenarTablero(0, 0);
     }
 
+    /**
+     * @param fila fila actual en el recorrido
+     * @param col  columna actual en el recorrido
+     * @return {@code true} si el tablero quedó completamente relleno
+     */
     private boolean rellenarTablero(int fila, int col) {
         if (fila == size) return true;
 
@@ -62,6 +76,12 @@ public class SudokuGenerator {
         return false;
     }
 
+    /**
+     * @param fila fila donde se quiere colocar el número
+     * @param col  columna donde se quiere colocar el número
+     * @param num  número a validar (1-6)
+     * @return {@code true} si el número no viola ninguna regla
+     */
     private boolean esSeguro(int fila, int col, int num) {
         for (int i = 0; i < size; i++) {
             if (board[fila][i] == num || board[i][col] == num)
@@ -79,6 +99,10 @@ public class SudokuGenerator {
         return true;
     }
 
+    /**
+     * @param n cantidad de números a generar
+     * @return arreglo mezclado con valores del 1 al n
+     */
     private int[] generarNumerosAleatorios(int n) {
         int[] arr = new int[n];
         for (int i = 0; i < n; i++) arr[i] = i + 1;

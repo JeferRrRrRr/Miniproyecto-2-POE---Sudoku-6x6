@@ -11,30 +11,56 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 
+/**
+ * @author Juan Diego Quiñones Cometa
+ * @author Jeferson Gomez Gomez
+ * @version 1.0
+ * @see SudokuBoard
+ * @see AlertsSudoku
+ * @see CellChangeListener
+ */
 public class SudokuGameController {
 
+    /** @see GridPane */
     @FXML
     private GridPane boardContainer;
 
+    /** @see Button */
     @FXML
     private Button btnNuevoJuego;
 
+    /** @see Button */
     @FXML
     private Button btnPista;
 
+    /** @see Button */
     @FXML
     private Button btnVerificar;
 
+    /** @see Label */
     @FXML
     private Label lblProgreso;
 
+    /** @see SudokuBoard#getSize() */
     private static final int TAMANIO = 6;
+
+    /** @see #handlePista() */
     private static final int MAX_PISTAS = 3;
 
+    /** @see SudokuBoard */
     private SudokuBoard tablero;
+
+    /** @see AlertsSudoku */
     private AlertsSudoku alertas;
+
+    /** @see #handlePista() */
     private int pistasRestantes;
 
+    /**
+     * @see SudokuBoard#generarTablero()
+     * @see #manejarNavegacionTeclado(KeyEvent)
+     * @see #actualizarProgreso()
+     */
     @FXML
     public void initialize() {
         alertas = new AlertsSudoku();
@@ -55,6 +81,10 @@ public class SudokuGameController {
         actualizarProgreso();
     }
 
+    /**
+     * @see SudokuBoard#generarNuevoTablero()
+     * @see AlertsSudoku#confirmarNuevoJuego()
+     */
     @FXML
     private void handleNuevoJuego() {
         boolean confirma = alertas.confirmarNuevoJuego();
@@ -69,6 +99,10 @@ public class SudokuGameController {
         }
     }
 
+    /**
+     * @see SudokuBoard#darPista()
+     * @see SudokuBoard#contarCeldasOcupadas()
+     */
     @FXML
     private void handlePista() {
         if (pistasRestantes > 0) {
@@ -83,11 +117,15 @@ public class SudokuGameController {
 
             if (pistasRestantes <= 0) {
                 if (btnPista != null) btnPista.setDisable(true);
-                alertas.mostrarInfo("Ayuda agotada ", "Has utilizado todas tus pistas (" + MAX_PISTAS + ") permitidas.");
+                alertas.mostrarInfo("Ayuda agotada", "Has utilizado todas tus pistas (" + MAX_PISTAS + ") permitidas.");
             }
         }
     }
 
+    /**
+     * @see SudokuBoard#verificarTableroManual()
+     * @see SudokuBoard#contarCeldasOcupadas()
+     */
     @FXML
     private void handleVerificar() {
         tablero.verificarTableroManual();
@@ -99,6 +137,10 @@ public class SudokuGameController {
         }
     }
 
+    /**
+     * @see SudokuBoard#contarCeldasOcupadas()
+     * @see Label#setText(String)
+     */
     private void actualizarProgreso() {
         if (lblProgreso != null) {
             int ocupadas = tablero.contarCeldasOcupadas();
@@ -111,6 +153,11 @@ public class SudokuGameController {
         }
     }
 
+    /**
+     * @param event evento de teclado capturado por el filtro
+     * @see SudokuCell#getFila()
+     * @see SudokuCell#getColumna()
+     */
     private void manejarNavegacionTeclado(KeyEvent event) {
         if (event.getTarget() instanceof SudokuCell) {
             SudokuCell celdaActual = (SudokuCell) event.getTarget();
@@ -134,6 +181,10 @@ public class SudokuGameController {
         }
     }
 
+    /**
+     * @return tablero actual del juego
+     * @see SudokuBoard
+     */
     public SudokuBoard getTablero() {
         return tablero;
     }

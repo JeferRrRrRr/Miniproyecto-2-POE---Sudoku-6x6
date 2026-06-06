@@ -8,22 +8,43 @@ import javafx.scene.layout.GridPane;
 
 import java.util.Random;
 
+/**
+ * @author Juan Diego Quiñones Cometa
+ * @author Jeferson Gomez Gomez
+ * @version 1.0
+ * @see SudokuGenerator
+ * @see SudokuCell
+ * @see CellChangeListener
+ */
+
 public class SudokuBoard extends GridPane implements CellChangeListener {
 
+    /** @see #esMovimientoValido(int, int, int) */
     private static final int SIZE = 6;
 
+    /** @see #darPista() */
     private static final int MIN_CELDAS_LIBRES_PARA_PISTA = 2;
 
+    /** @see #getCeldas() */
     private SudokuCell[][] celdas;
 
+    /** @see #getSolucion() */
     private int[][] solucion;
 
+    /** @see #ocultarCeldasAleatorias(int[][]) */
     private int[][] tableroVisible;
 
+    /** @see #generarTablero() */
     public SudokuBoard() {
         celdas = new SudokuCell[SIZE][SIZE];
         generarTablero();
     }
+
+    /**
+     * @see SudokuGenerator
+     * @see #ocultarCeldasAleatorias(int[][])
+     * @see #aplicarEstiloCelda(SudokuCell, int, int, boolean)
+     */
     public void generarTablero() {
         this.getChildren().clear();
 
@@ -47,9 +68,15 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
             }
         }
     }
+
+    /** @see #generarTablero() */
     public void generarNuevoTablero() {
         generarTablero();
     }
+
+    /**
+     * @param tablero tablero a modificar; las celdas ocultas quedan en 0
+     */
     public static void ocultarCeldasAleatorias(int[][] tablero) {
         Random rand = new Random();
         boolean[][] mantenerVisible = new boolean[SIZE][SIZE];
@@ -76,6 +103,13 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
             }
         }
     }
+
+    /**
+     * @param celda    celda a la que se aplica el estilo
+     * @param fila     fila de la celda (0-5)
+     * @param col      columna de la celda (0-5)
+     * @param editable {@code true} si el usuario puede editar la celda
+     */
     private void aplicarEstiloCelda(SudokuCell celda, int fila, int col, boolean editable) {
         String colorFondo = editable ? "white" : "#dce8f5";
 
@@ -95,16 +129,34 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
                 colorFondo, top, right, bottom, left
         ));
     }
+
+    /**
+     * @param celda celda a modificar
+     * @param color color CSS a aplicar (nombre o hexadecimal)
+     */
     private void establecerFondoCelda(SudokuCell celda, String color) {
         String estilo = celda.getStyle()
                 .replaceAll("-fx-background-color:[^;]+;", "");
         celda.setStyle(estilo + "-fx-background-color: " + color + ";");
     }
+
+    /**
+     * @param fila       fila de la celda modificada (0-5)
+     * @param col        columna de la celda modificada (0-5)
+     * @param nuevoValor nuevo valor introducido (0 si fue borrada)
+     * @see #actualizarColoresCeldas()
+     * @see #verificarCompletado()
+     */
     @Override
     public void onValueChanged(int fila, int col, int nuevoValor) {
         actualizarColoresCeldas();
         verificarCompletado();
     }
+
+    /**
+     * @see SudokuCell#setValidacion(boolean)
+     * @see #esMovimientoValido(int, int, int)
+     */
     private void actualizarColoresCeldas() {
         for (int f = 0; f < SIZE; f++) {
             for (int c = 0; c < SIZE; c++) {
@@ -120,6 +172,13 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
             }
         }
     }
+
+    /**
+     * @param fila  fila de la celda (0-5)
+     * @param col   columna de la celda (0-5)
+     * @param valor valor a validar (1-6)
+     * @return {@code true} si el valor no viola ninguna regla del Sudoku
+     */
     public boolean esMovimientoValido(int fila, int col, int valor) {
         for (int i = 0; i < SIZE; i++) {
             if (i != col  && celdas[fila][i].getValue() == valor) return false;
@@ -135,6 +194,11 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
         }
         return true;
     }
+
+    /**
+     * @see AlertsSudoku#showAlert(Alert.AlertType, String, String)
+     * @see SudokuCell#setEditable(boolean)
+     */
     private void verificarCompletado() {
         for (int f = 0; f < SIZE; f++) {
             for (int c = 0; c < SIZE; c++) {
@@ -154,6 +218,12 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
             }
         }
     }
+
+    /**
+     * @see #actualizarColoresCeldas()
+     * @see #verificarCompletado()
+     * @see AlertsSudoku#showAlert(Alert.AlertType, String, String)
+     */
     public void verificarTableroManual() {
         boolean hayVacias  = false;
         boolean hayErrores = false;
@@ -186,6 +256,10 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
         actualizarColoresCeldas();
     }
 
+    /**
+     * @see SudokuCell#mostrarPista(int)
+     * @see #MIN_CELDAS_LIBRES_PARA_PISTA
+     */
     public void darPista() {
         int celdasLibres = (SIZE * SIZE) - contarCeldasOcupadas();
 
@@ -211,6 +285,9 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
         actualizarColoresCeldas();
     }
 
+    /**
+     * @return número de celdas con valor distinto de 0
+     */
     public int contarCeldasOcupadas() {
         int ocupadas = 0;
         for (int f = 0; f < SIZE; f++) {
@@ -220,6 +297,11 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
         }
         return ocupadas;
     }
+
+    /**
+     * @param tablero tablero original a copiar
+     * @return nueva instancia con los mismos valores
+     */
     private int[][] copiarTablero(int[][] tablero) {
         int[][] copia = new int[tablero.length][tablero[0].length];
         for (int i = 0; i < tablero.length; i++) {
@@ -227,12 +309,24 @@ public class SudokuBoard extends GridPane implements CellChangeListener {
         }
         return copia;
     }
+
+    /**
+     * @return matriz con la solución completa del tablero actual
+     */
     public int[][] getSolucion() {
         return solucion;
     }
+
+    /**
+     * @return matriz de celdas visuales del tablero
+     */
     public SudokuCell[][] getCeldas() {
         return celdas;
     }
+
+    /**
+     * @return tamaño del tablero (siempre 6)
+     */
     public static int getSize() {
         return SIZE;
     }

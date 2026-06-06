@@ -5,6 +5,14 @@ import javafx.scene.control.ButtonType;
 
 import java.util.Optional;
 
+/**
+ * @author Juan Diego Quiñones Cometa
+ * @author Jeferson Gomez Gomez
+ * @version 1.0
+ * @see GameAlertHandler
+ * @see AlertsSudoku
+ */
+
 public abstract class AlertAdapter implements GameAlertHandler {
 
     @Override
@@ -19,26 +27,50 @@ public abstract class AlertAdapter implements GameAlertHandler {
     @Override
     public void onEnd() {}
 
+    /**
+     * @param mensajeError mensaje descriptivo del error
+     * @see #mostrarError(String, String)
+     */
     @Override
     public void onError(String mensajeError) {
         mostrarError("Error", mensajeError);
     }
 
+    /**
+     * @param titulo  título de la ventana
+     * @param mensaje contenido del mensaje
+     * @see #showAlert(Alert.AlertType, String, String)
+     */
     @Override
     public void mostrarInfo(String titulo, String mensaje) {
         showAlert(Alert.AlertType.INFORMATION, titulo, mensaje);
     }
 
+    /**
+     * @param titulo  título de la ventana
+     * @param mensaje contenido del mensaje
+     * @see #showAlert(Alert.AlertType, String, String)
+     */
     @Override
     public void mostrarError(String titulo, String mensaje) {
         showAlert(Alert.AlertType.ERROR, titulo, mensaje);
     }
 
+    /**
+     * @param titulo  título de la ventana
+     * @param mensaje contenido del mensaje
+     * @see #showAlert(Alert.AlertType, String, String)
+     */
     @Override
     public void mostrarAdvertencia(String titulo, String mensaje) {
         showAlert(Alert.AlertType.WARNING, titulo, mensaje);
     }
 
+    /**
+     * @param titulo  título de la ventana de confirmación
+     * @param mensaje pregunta o mensaje a confirmar
+     * @return {@code true} si el usuario presionó OK
+     */
     @Override
     public boolean mostrarConfirmacion(String titulo, String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
@@ -49,6 +81,12 @@ public abstract class AlertAdapter implements GameAlertHandler {
         return resultado.isPresent() && resultado.get() == ButtonType.OK;
     }
 
+    /**
+     * @param tipo    tipo de alerta (INFORMATION, WARNING, ERROR, CONFIRMATION)
+     * @param titulo  título de la ventana
+     * @param mensaje contenido del mensaje
+     * @see Alert.AlertType
+     */
     public void showAlert(Alert.AlertType tipo, String titulo, String mensaje) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
@@ -57,6 +95,9 @@ public abstract class AlertAdapter implements GameAlertHandler {
         alerta.showAndWait();
     }
 
+    /**
+     * @return {@code true} si el usuario confirmó iniciar nuevo juego
+     */
     public boolean confirmarNuevoJuego() {
         return false;
     }
