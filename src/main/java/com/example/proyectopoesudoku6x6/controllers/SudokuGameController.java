@@ -83,7 +83,7 @@ public class SudokuGameController {
 
             if (pistasRestantes <= 0) {
                 if (btnPista != null) btnPista.setDisable(true);
-                alertas.mostrarInfo("Ayuda agotada", "Has utilizado todas tus pistas (" + MAX_PISTAS + ") permitidas.");
+                alertas.mostrarInfo("Ayuda agotada ", "Has utilizado todas tus pistas (" + MAX_PISTAS + ") permitidas.");
             }
         }
     }
