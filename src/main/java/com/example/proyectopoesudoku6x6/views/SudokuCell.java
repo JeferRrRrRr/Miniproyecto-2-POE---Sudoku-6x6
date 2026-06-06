@@ -2,20 +2,19 @@ package com.example.proyectopoesudoku6x6.views;
 
 import com.example.proyectopoesudoku6x6.controllers.CellChangeListener;
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+
+import java.util.function.UnaryOperator;
 
 public class SudokuCell extends TextField {
 
     private final int fila;
-
     private final int col;
-
     private boolean esEditable;
-
     private int valor;
-
     private CellChangeListener listener;
 
     public SudokuCell(int fila, int col, boolean esEditable, int valor) {
@@ -25,7 +24,7 @@ public class SudokuCell extends TextField {
         this.valor      = valor;
 
         setPrefSize(60, 60);
-        setFont(Font.font("Arial", 20));
+        setFont(Font.font("Arial", FontWeight.BOLD, 22));
         setAlignment(Pos.CENTER);
         setFocusTraversable(true);
 
@@ -36,31 +35,31 @@ public class SudokuCell extends TextField {
             setEditable(esEditable);
         }
 
-        configurarListenerTexto();
+        configurarFiltroEntrada();
         configurarEventosMouse();
     }
 
-    private void configurarListenerTexto() {
-        textProperty().addListener((observable, valorAnterior, valorNuevo) -> {
+    private void configurarFiltroEntrada() {
+        UnaryOperator<TextFormatter.Change> filtro = cambio -> {
+            String nuevoTexto = cambio.getControlNewText();
+            if (nuevoTexto.isEmpty() || nuevoTexto.matches("[1-6]")) {
+                return cambio;
+            }
+            return null;
+        };
 
+        TextFormatter<String> formatter = new TextFormatter<>(filtro);
+        this.setTextFormatter(formatter);
+
+
+        this.textProperty().addListener((observable, valorAnterior, valorNuevo) -> {
             if (valorNuevo.isEmpty()) {
                 this.valor = 0;
-                if (listener != null) listener.onValueChanged(fila, col, 0);
-                return;
-            }
-
-            if (valorNuevo.matches("[1-6]")) {
-                this.valor = Integer.parseInt(valorNuevo);
-                if (listener != null) listener.onValueChanged(fila, col, this.valor);
             } else {
-                setText(valorAnterior);
-                if (!valorNuevo.isEmpty()) {
-                    Alert alerta = new Alert(Alert.AlertType.WARNING);
-                    alerta.setTitle("Entrada inválida");
-                    alerta.setHeaderText(null);
-                    alerta.setContentText("Solo se permiten números del 1 al 6.");
-                    alerta.showAndWait();
-                }
+                this.valor = Integer.parseInt(valorNuevo);
+            }
+            if (listener != null) {
+                listener.onValueChanged(fila, col, this.valor);
             }
         });
     }
@@ -72,17 +71,16 @@ public class SudokuCell extends TextField {
             }
         });
 
+        // Efecto visual al pasar el mouse
         setOnMouseEntered(evento -> {
             if (esEditable && valor == 0) {
-                String estilo = getStyle().replaceAll("-fx-background-color:[^;]+;", "");
-                setStyle(estilo + "-fx-background-color: #eaf4fb;");
+                modificarEstilo("-fx-background-color", "#eaf4fb");
             }
         });
 
         setOnMouseExited(evento -> {
             if (esEditable && valor == 0) {
-                String estilo = getStyle().replaceAll("-fx-background-color:[^;]+;", "");
-                setStyle(estilo + "-fx-background-color: white;");
+                modificarEstilo("-fx-background-color", "white");
             }
         });
     }
@@ -100,26 +98,32 @@ public class SudokuCell extends TextField {
         setValue(num);
         setEditable(false);
         esEditable = false;
-        String estilo = getStyle().replaceAll("-fx-background-color:[^;]+;", "");
-        setStyle(estilo + "-fx-background-color: #fffacd;");
+        modificarEstilo("-fx-background-color", "#fffacd");
+        modificarEstilo("-fx-text-fill", "#d35400");
     }
 
     public void setValidacion(boolean valido) {
         if (!esEditable) return;
 
-        String estiloBase = getStyle()
-                .replaceAll("-fx-background-color:[^;]+;", "")
-                .replaceAll("-fx-border-color:[^;]+;", "");
-
         if (valor == 0 || valido) {
-            setStyle(estiloBase
-                    + "-fx-background-color: white;"
-                    + "-fx-border-color: #34495e;");
+            modificarEstilo("-fx-background-color", "white");
+            modificarEstilo("-fx-text-fill", "#2c3e50");
         } else {
-            setStyle(estiloBase
-                    + "-fx-background-color: #ffe0e0;"
-                    + "-fx-border-color: #e74c3c;");
+            modificarEstilo("-fx-background-color", "#ffe0e0");
+            modificarEstilo("-fx-text-fill", "#c0392b");
         }
+    }
+
+    private void modificarEstilo(String propiedad, String nuevoValor) {
+        String estiloActual = getStyle();
+        if (estiloActual == null) estiloActual = "";
+
+        if (estiloActual.contains(propiedad)) {
+            estiloActual = estiloActual.replaceAll(propiedad + "\\s*:[^;]+;", propiedad + ": " + nuevoValor + ";");
+        } else {
+            estiloActual += propiedad + ": " + nuevoValor + ";";
+        }
+        setStyle(estiloActual);
     }
 
     public void setChangeListener(CellChangeListener listener) {
